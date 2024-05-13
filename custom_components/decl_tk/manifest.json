@@ -1,0 +1,11 @@
+{
+  "domain": "decl_tk",
+  "name": "Declarative Toolkit",
+  "after_dependencies": [],
+  "codeowners": [],
+  "version": "0.1.1",
+  "documentation": "https://www.home-assistant.io/integrations/flux",
+  "iot_class": "calculated",
+  "integration_type": "helper",
+  "requirements": ["clingo==5.7.1"]
+}
