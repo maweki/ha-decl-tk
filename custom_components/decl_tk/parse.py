@@ -229,8 +229,21 @@ def eval_cnf(hass, node):
         entity, state = node.args
         # logger.debug("is_state(" + entity.value + ', ' + state.value + ') == ' + hass.states.get(entity.value).state)
         return hass.states.get(entity.value).state == state.value
+      if node.func.id == 'states':
+        entity, = node.args
+        return hass.states.get(entity.value).state
       raise NotImplementedError(node)
 
+    def visit_Compare(self, node):
+      left = node.left
+      right = node.comparators[0]
+      comp = node.ops[0]
+
+      import operator
+      for (optype, opfunc) in [(ast.Lt ,operator.lt),(ast.LtE ,operator.le),(ast.Eq ,operator.eq),(ast.NotEq ,operator.ne),(ast.GtE ,operator.ge),(ast.Gt ,operator.gt),]:
+        if isinstance(comp, optype):
+          return opfunc(self.visit(left), self.visit(right))
+      raise NotImplementedError(node)
   return eval_visitor().visit(node)
 
 
@@ -298,6 +311,6 @@ def create_literal(node):
 def implication_body_to_rule(body):
   if isinstance(body, ast.BoolOp) and isinstance(body.op, ast.And):
     return ":- " + ', '.join(create_literal(b) for b in body.values) + '.'
-  if isinstance(body, (ast.UnaryOp, ast.Call)):
+  if isinstance(body, (ast.UnaryOp, (ast.Call, ast.Compare))):
     return ":- " + create_literal(body) + '.'
   raise NotImplementedError(body)
