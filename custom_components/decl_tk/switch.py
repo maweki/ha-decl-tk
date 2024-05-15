@@ -62,12 +62,13 @@ class InvariantSwitch(SwitchEntity, RestoreEntity):
         self._code = code
         self._ast = code_to_cnf(code)
         self._entities = get_used_entities(self._ast)
+        self._unsatisfiable = False
 
     @property
     def extra_state_attributes(self):
         from ast import unparse
         return { 'code': self._code, 'code_cnf': unparse(self._ast),
-                 'tracked_invariant_sensor': self._tracked_sensor.entity_id, 'used_entities': list(self._entities)}
+                 'tracked_invariant_sensor': self._tracked_sensor.entity_id, 'used_entities': list(self._entities), 'unsatisfiable': self._unsatisfiable}
 
     @property
     def name(self) -> str:
@@ -126,23 +127,25 @@ class InvariantSwitch(SwitchEntity, RestoreEntity):
             # logger.debug(repr(goal_rules))
             state_facts = []
             for e in self._entities:
-              state_facts.append('was_state("' + e + '", "'+ self.hass.states.get(e).state +'").') # fix that for numeric-like states
-              state_facts.append('domain(' + self.hass.states.get(e).domain + ', "'+ e +'").')
+              state_facts.append('was_state(' + quote(e) + ', '+ format_return_value(self.hass.states.get(e).state) +').') # fix that for numeric-like states
+              state_facts.append('domain(' + self.hass.states.get(e).domain + ', '+ quote(e) +').')
               timediff = self.hass.states.get(e).last_changed - datetime.datetime.now(self.hass.states.get(e).last_changed.tzinfo)
-              state_facts.append('last_changed("' + e + '", '+ str(round(timediff.total_seconds()*10)) + ').')
+              state_facts.append('last_changed(' + quote(e) + ', '+ str(round(timediff.total_seconds()*10)) + ').')
 
             ctl = clingo.Control()
             ctl.configuration.solve.models = 0
             program = invariant_rules + '\n'.join(state_facts + goal_rules)
+            logger.debug(program)
             ctl.add("base", [], program)
             ctl.ground([("base", [])])
-            logger.debug(program)
             with ctl.solve(yield_=True) as handle:
               models = []
               for model in handle:
                 models.append(model.symbols(atoms=True))
               logger.debug(str(len(models)) + " models found")
               if models:
+                self._unsatisfiable = False
+                self.schedule_update_ha_state()
                 # mdl = choice(models)
                 mdl = models[-1]
                 # logger.debug("Model found: " + " - " + repr(mdl))
@@ -153,3 +156,14 @@ class InvariantSwitch(SwitchEntity, RestoreEntity):
                     await self.hass.services.async_call(domain.name, service.name, {"entity_id" : entity.string})
               else:
                 logger.debug('Invariant ' + self._name + ' is currently not satisfiable')
+                self._unsatisfiable = True
+                self.schedule_update_ha_state()
+from .parse import auto_round
+def format_return_value(v):
+  try:
+    return str(auto_round(v))
+  except:
+    return quote(v)
+
+def quote(v):
+  return "\"" + str(v).replace("\"", "\\\"") + "\""

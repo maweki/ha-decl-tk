@@ -276,6 +276,8 @@ def to_implication_form(node):
   return move_negations().visit(negate(node))
 
 def create_literal(node):
+  if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+    return "not " + create_literal(node.operand)
   if isinstance(node, ast.Call):
     if node.func.id == 'states':
       node.func.id = 'is_state'
@@ -287,6 +289,7 @@ def create_literal(node):
       assert len(node.args) == 3
     if node.func.id == 'has_value':
       assert len(node.args) == 1
+    return ast.unparse(ast.Call(node.func, auto_round_constant_list(node.args), []))
   if isinstance(node, ast.Compare):
     # check that these are the states/state_attr function
     left = node.left
@@ -296,14 +299,14 @@ def create_literal(node):
     if isinstance(left, ast.Call) and isinstance(right, ast.Call):
       lvar = fresh_variable()
       rvar = fresh_variable()
-      subbody.append(ast.Call(left.func, left.args + [lvar], []))
-      subbody.append(ast.Call(right.func, right.args + [rvar], []))
+      subbody.append(ast.Call(left.func, auto_round_constant_list(left.args) + [lvar], []))
+      subbody.append(ast.Call(right.func, auto_round_constant_list(right.args) + [rvar], []))
       subbody.append(ast.Compare(lvar, [op], [rvar]))
       return ', '.join(create_literal(s) for s in subbody)
     if isinstance(left, ast.Call) and isinstance(right, (ast.Expr,ast.Constant)):
       lvar = fresh_variable()
-      rvar = right
-      subbody.append(ast.Call(left.func, left.args + [lvar],[]))
+      rvar = auto_round_constant(right)
+      subbody.append(ast.Call(left.func, auto_round_constant_list(left.args) + [lvar],[]))
       subbody.append(ast.Compare(lvar, [op], [rvar]))
       return ', '.join(create_literal(s) for s in subbody)
   return ast.unparse(node)
@@ -311,6 +314,17 @@ def create_literal(node):
 def implication_body_to_rule(body):
   if isinstance(body, ast.BoolOp) and isinstance(body.op, ast.And):
     return ":- " + ', '.join(create_literal(b) for b in body.values) + '.'
-  if isinstance(body, (ast.UnaryOp, (ast.Call, ast.Compare))):
+  if isinstance(body, (ast.UnaryOp, ast.Call, ast.Compare)):
     return ":- " + create_literal(body) + '.'
   raise NotImplementedError(body)
+
+def auto_round(value):
+  try:
+    return round(float(value))
+  except:
+    return str(value)
+def auto_round_constant(node):
+  if isinstance(node, ast.Constant):
+    return ast.Constant(auto_round(node.value))
+  return node
+auto_round_constant_list = lambda l: [auto_round_constant(c) for c in l]
