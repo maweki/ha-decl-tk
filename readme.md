@@ -38,6 +38,8 @@ Currently supported domains:
 * light
 * switch
 * input_boolean
+* sun
+* zone
 
 #### Notes
 
@@ -53,6 +55,7 @@ Multiple invariants should, if possible, use disjoint sets of devices that recei
 
 * support more domains
 * support True/False constants to make some rules easier
+* more graceful error handling
 * support arithmetic in invariants
 * support attributes
 * configuration verification
