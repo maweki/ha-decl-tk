@@ -12,6 +12,10 @@ call_service(D, A, E) :- action(E, A), domain(D, E).
 :- action(E, _), domain(sensor, E).
 % binary_sensor
 :- action(E, _), domain(binary_sensor, E).
+% zone
+:- action(E, _), domain(zone, E).
+% sun
+:- action(E, _), domain(sun, E).
 % light
 {action(E, turn_off); action(E, turn_on)} :- domain(light, E).
 is_state(L, "on") :- domain(light, L), was_state(L, "off"), action(L, turn_on).
