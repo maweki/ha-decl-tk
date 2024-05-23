@@ -24,6 +24,43 @@ is_state(L, "off") :- domain(switch, L), was_state(L, "on"), action(L, turn_off)
 {action(E, turn_off); action(E, turn_on)} :- domain(input_boolean, E).
 is_state(L, "on") :- domain(input_boolean, L), was_state(L, "off"), action(L, turn_on).
 is_state(L, "off") :- domain(input_boolean, L), was_state(L, "on"), action(L, turn_off).
+
+% domains (not yet) implemented:
+% automation
+% button
+% calendar
+% camera
+% climate
+% conversation
+% device_tracker
+% event
+% fan
+% group
+% input_button
+% input_datetime
+% input_number
+% input_select
+% input_text
+% lock
+% media_player
+% number
+% openhasp
+% person
+% proximity
+% remote
+% scene
+% script
+% select
+% sensor
+% stt
+% text
+% timer
+% todo
+% tts
+% update
+% vacuum
+% weather
+
 % Facts:
 % domain(domain, entity). -- entity domains
 % was_state(entity, state). -- The current state (is_state is the goal state)
