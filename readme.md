@@ -33,17 +33,18 @@ For the second example (domains not yet implemented completely), the light shoul
 
 Currently supported domains:
 
-* sensor
-* binary_sensor
-* light
-* switch
-* input_boolean
+* sensor/binary_sensor
+* light (only on/off)
+* switch/input_boolean
 * sun
 * zone
+* button/input_button
 
 #### Notes
 
-The used ASP solver does not support floating point numbers. Only strings and integers. Therefore, in the solving case, floating point numbers are rounded to the next integer using `round`. During invariant tracking, no rounding occurs. This means, that it is possible for the solver to see no action necessary while the invariant is tracked as `off`. This is probably not ideal behaviour and due to change (i.e., rounding should also occur when evaluating invariants).
+The used ASP solver does not support floating point numbers. **Only strings and integers**. Therefore, in the solving case, floating point numbers are rounded to the next integer using `round`. During invariant tracking, no rounding occurs. This means, that it is possible for the solver to see no action necessary while the invariant is tracked as `off`. This is probably not ideal behaviour and due to change (i.e., rounding should also occur when evaluating invariants).
+
+Entities with a timestamp as state (e.g. buttons) do not really make sense in terms of an invariant. Each timestamp is always converted to the number of seconds passed since that timestamp. So you can do `states('input_button.btn') < 30` for an invariant that a button should not be unpressed for 30 seconds or more. If an entity of such a domain is added, the invariant state is evaluated every 60 seconds in addition to the other state changes. The 60 seconds value should be configurable in the future.
 
 Additional rules can be added into `*.lp` files in the `rules/invariants/` subdirectory.
 
@@ -60,6 +61,8 @@ Multiple invariants should, if possible, use disjoint sets of devices that recei
 * support attributes
 * configuration verification
 * extend configuration to allow for nice entity names, heuristics, other settings. Ideally we would like to be able to exclude entities for changing.
+* allow scenes to be checked against the invariants (somehow?)
+* make time tracking configurable
 
 ### Event Recognition through Metric Temporal Operators
 

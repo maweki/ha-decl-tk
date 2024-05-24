@@ -1,4 +1,5 @@
 import ast
+from datetime import datetime
 
 from logging import Logger, getLogger
 logger = getLogger(__package__)
@@ -212,6 +213,9 @@ def eval_cnf(hass, node):
     def generic_visit(self, node):
       raise NotImplementedError(node)
 
+    def visit_Constant(self, node):
+      return auto_round(node.value)
+
     def visit_BoolOp(self, node):
       if isinstance(node.op, ast.Or):
         return any(self.visit(n) for n in node.values)
@@ -228,10 +232,10 @@ def eval_cnf(hass, node):
       if node.func.id == 'is_state':
         entity, state = node.args
         # logger.debug("is_state(" + entity.value + ', ' + state.value + ') == ' + hass.states.get(entity.value).state)
-        return hass.states.get(entity.value).state == state.value
+        return coerce_return_value(hass.states.get(entity.value).state) == state.value
       if node.func.id == 'states':
         entity, = node.args
-        return hass.states.get(entity.value).state
+        return coerce_return_value(hass.states.get(entity.value).state)
       raise NotImplementedError(node)
 
     def visit_Compare(self, node):
@@ -328,3 +332,14 @@ def auto_round_constant(node):
     return ast.Constant(auto_round(node.value))
   return node
 auto_round_constant_list = lambda l: [auto_round_constant(c) for c in l]
+
+def time_diff(v):
+  if not isinstance(v, datetime):
+    v = datetime.fromisoformat(v)
+  return (datetime.now(v.tzinfo) - v).seconds
+
+def coerce_return_value(v):
+  try:
+    return time_diff(v)
+  except Exception as e:
+    return auto_round(v)

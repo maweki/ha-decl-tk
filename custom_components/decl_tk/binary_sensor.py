@@ -41,7 +41,7 @@ class InvariantSensor(BinarySensorEntity):
 
     def __init__(self, hass, name, code) -> None:
         from .parse import code_to_cnf, get_used_entities
-        from homeassistant.helpers.event import async_track_state_change_event
+        from homeassistant.helpers.event import async_track_state_change_event, async_track_time_interval
         from ast import unparse
 
         """Initialize the sensor."""
@@ -51,9 +51,17 @@ class InvariantSensor(BinarySensorEntity):
         self._code = code
         self._ast = code_to_cnf(code)
         self._entities = get_used_entities(self._ast)
+        self._time_tracking = False
         logger.debug("New Invariant: " + unparse(self._ast))
         logger.debug("Tracking" + repr(self._entities))
         async_track_state_change_event(hass, list(self._entities), self.source_entity_changed)
+
+        if any((e.split('.')[0] in ('button', 'input_button')) for e in self._entities):
+          from datetime import timedelta
+          logger.debug("Also tracking time")
+          self._time_tracking = 60 # this amount needs to be configurable
+          async_track_time_interval(hass, self.source_entity_changed, timedelta(seconds=self._time_tracking))
+
 
     @property
     def name(self) -> str:
@@ -68,7 +76,7 @@ class InvariantSensor(BinarySensorEntity):
     @property
     def extra_state_attributes(self):
         from ast import unparse
-        return { 'code': self._code, 'code_cnf': unparse(self._ast), 'tracked_entities': list(self._entities)}
+        return { 'code': self._code, 'code_cnf': unparse(self._ast), 'tracked_entities': list(self._entities), 'time_tracking': self._time_tracking}
 
     def source_entity_changed(self, *args, **kwargs):
       self.update()

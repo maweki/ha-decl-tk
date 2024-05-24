@@ -5,7 +5,7 @@ has_value(E) :- is_state(E, S), S != "unknown", S != "unavailable".
 :- action(E, A1), action(E, A2), A1!=A2.
 is_state(E, S) :- not action(E, _), was_state(E, S).
 call_service(D, A, E) :- action(E, A), domain(D, E).
-#minimize { C@1 : action(E, _), last_changed(E,C) }.
+#maximize { C@1 : action(E, _), last_changed(E,C) }.
 
 % Domains:
 % sensor
@@ -28,10 +28,16 @@ is_state(L, "off") :- domain(switch, L), was_state(L, "on"), action(L, turn_off)
 {action(E, turn_off); action(E, turn_on)} :- domain(input_boolean, E).
 is_state(L, "on") :- domain(input_boolean, L), was_state(L, "off"), action(L, turn_on).
 is_state(L, "off") :- domain(input_boolean, L), was_state(L, "on"), action(L, turn_off).
+% button
+{action(E, press)} :- domain(button, E).
+is_state(L, 0) :- domain(button, E), was_state(E, _), action(L, press).
+% input_button
+{action(E, press)} :- domain(input_button, E).
+is_state(L, 0) :- domain(input_button, E), was_state(E, _), action(L, press).
+
 
 % domains (not yet) implemented:
 % automation
-% button
 % calendar
 % camera
 % climate
@@ -40,7 +46,6 @@ is_state(L, "off") :- domain(input_boolean, L), was_state(L, "on"), action(L, tu
 % event
 % fan
 % group
-% input_button
 % input_datetime
 % input_number
 % input_select

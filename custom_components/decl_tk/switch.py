@@ -17,7 +17,7 @@ logger = getLogger(__package__)
 from . import DOMAIN
 from time import sleep
 from pathlib import Path
-import datetime
+from datetime import datetime
 
 import clingo
 from random import choice
@@ -127,10 +127,9 @@ class InvariantSwitch(SwitchEntity, RestoreEntity):
             # logger.debug(repr(goal_rules))
             state_facts = []
             for e in self._entities:
-              state_facts.append('was_state(' + quote(e) + ', '+ format_return_value(self.hass.states.get(e).state) +').') # fix that for numeric-like states
+              state_facts.append('was_state(' + quote(e) + ', '+ format_return_value(self.hass.states.get(e).state) +').')
               state_facts.append('domain(' + self.hass.states.get(e).domain + ', '+ quote(e) +').')
-              timediff = self.hass.states.get(e).last_changed - datetime.datetime.now(self.hass.states.get(e).last_changed.tzinfo)
-              state_facts.append('last_changed(' + quote(e) + ', '+ str(round(timediff.total_seconds()*10)) + ').')
+              state_facts.append('last_changed(' + quote(e) + ', '+ format_return_value(self.hass.states.get(e).last_changed) + ').')
 
             ctl = clingo.Control()
             ctl.configuration.solve.models = 0
@@ -158,10 +157,11 @@ class InvariantSwitch(SwitchEntity, RestoreEntity):
                 logger.debug('Invariant ' + self._name + ' is currently not satisfiable')
                 self._unsatisfiable = True
                 self.schedule_update_ha_state()
-from .parse import auto_round
+from .parse import coerce_return_value
+
 def format_return_value(v):
   try:
-    return str(auto_round(v))
+    return str(coerce_return_value(v))
   except:
     return quote(v)
 
