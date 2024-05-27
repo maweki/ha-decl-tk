@@ -39,6 +39,7 @@ Currently supported domains:
 * sun
 * zone
 * button/input_button
+* select/input_select
 
 #### Notes
 
@@ -46,7 +47,10 @@ The used ASP solver does not support floating point numbers. **Only strings and 
 
 Entities with a timestamp as state (e.g. buttons) do not really make sense in terms of an invariant. Each timestamp is always converted to the number of seconds passed since that timestamp. So you can do `states('input_button.btn') < 30` for an invariant that a button should not be unpressed for 30 seconds or more. If an entity of such a domain is added, the invariant state is evaluated every 60 seconds in addition to the other state changes. The 60 seconds value should be configurable in the future.
 
-Additional rules can be added into `*.lp` files in the `rules/invariants/` subdirectory.
+Additional rules can be added into `*.lp` files in the `rules/invariants/` subdirectory. Predefined predicates are:
+
+* `is_state` / `was_state` for goal state and current state
+* `action`, `domain`
 
 As only the states for the entities actually used are fed into the solver, entity names may not be generated dynamically.
 

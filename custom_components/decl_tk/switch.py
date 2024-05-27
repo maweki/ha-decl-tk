@@ -127,9 +127,13 @@ class InvariantSwitch(SwitchEntity, RestoreEntity):
             # logger.debug(repr(goal_rules))
             state_facts = []
             for e in self._entities:
-              state_facts.append('was_state(' + quote(e) + ', '+ format_return_value(self.hass.states.get(e).state) +').')
-              state_facts.append('domain(' + self.hass.states.get(e).domain + ', '+ quote(e) +').')
-              state_facts.append('last_changed(' + quote(e) + ', '+ format_return_value(self.hass.states.get(e).last_changed) + ').')
+              entity = self.hass.states.get(e)
+              state_facts.append('was_state(' + quote(e) + ', '+ format_return_value(entity.state) +').')
+              state_facts.append('domain(' + entity.domain + ', '+ quote(e) +').')
+              state_facts.append('last_changed(' + quote(e) + ', '+ format_return_value(entity.last_changed) + ').')
+              if entity.domain in ('select', 'input_select'):
+                for option in entity.attributes['options']:
+                  state_facts.append('select_option(' + quote(e) + ', '+ quote(option) +').')
 
             ctl = clingo.Control()
             ctl.configuration.solve.models = 0
@@ -147,17 +151,28 @@ class InvariantSwitch(SwitchEntity, RestoreEntity):
                 self.schedule_update_ha_state()
                 # mdl = choice(models)
                 mdl = models[-1]
-                # logger.debug("Model found: " + " - " + repr(mdl))
+                logger.debug("Model found: " + " - " + repr(mdl))
                 for term in mdl:
                   if term.name == 'call_service':
-                    domain, service, entity = term.arguments
-                    # logger.debug(repr(domain.name) + " - " + repr(service.name) + repr(entity.string))
-                    await self.hass.services.async_call(domain.name, service.name, {"entity_id" : entity.string})
+                    domain, service, entity, args = term.arguments
+                    kwargs = decode_args(args)
+                    logger.debug(repr(domain.name) + " - " + repr(service.name) + repr({"entity_id" : entity.string} | kwargs))
+                    await self.hass.services.async_call(domain.name, service.name, {"entity_id" : entity.string} | kwargs)
               else:
                 logger.debug('Invariant ' + self._name + ' is currently not satisfiable')
                 self._unsatisfiable = True
                 self.schedule_update_ha_state()
+
 from .parse import coerce_return_value
+
+def decode_args(args):
+  def get_val_from_symbol(symbol):
+    try:
+      return symbol.number
+    except:
+      return symbol.string
+
+  return { arg.name : get_val_from_symbol(arg.arguments[0]) for arg in args.arguments}
 
 def format_return_value(v):
   try:

@@ -1,40 +1,46 @@
 -has_value(E) :- is_state(E, "unknown").
 -has_value(E) :- is_state(E, "unavailable").
 has_value(E) :- is_state(E, S), S != "unknown", S != "unavailable".
-:- is_state(E, S), was_state(E, S), action(E, _).
-:- action(E, A1), action(E, A2), A1!=A2.
-is_state(E, S) :- not action(E, _), was_state(E, S).
-call_service(D, A, E) :- action(E, A), domain(D, E).
-#maximize { C@1 : action(E, _), last_changed(E,C) }.
+:- is_state(E, S), was_state(E, S), action(E, _, _).
+:- action(E, A1, _), action(E, A2, _), A1!=A2.
+:- action(E, Ac, A1), action(E, Ac, A2), A1!=A2.
+is_state(E, S) :- not action(E, _, _), was_state(E, S).
+call_service(D, Act, E, Args) :- action(E, Act, Args), domain(D, E).
+#maximize { C@1 : action(E, _, _), last_changed(E,C) }.
 
 % Domains:
 % sensor
-:- action(E, _), domain(sensor, E).
+:- action(E, _, _), domain(sensor, E).
 % binary_sensor
-:- action(E, _), domain(binary_sensor, E).
+:- action(E, _, _), domain(binary_sensor, E).
 % zone
-:- action(E, _), domain(zone, E).
+:- action(E, _, _), domain(zone, E).
 % sun
-:- action(E, _), domain(sun, E).
+:- action(E, _, _), domain(sun, E).
 % light
-{action(E, turn_off); action(E, turn_on)} :- domain(light, E).
-is_state(L, "on") :- domain(light, L), was_state(L, "off"), action(L, turn_on).
-is_state(L, "off") :- domain(light, L), was_state(L, "on"), action(L, turn_off).
+{action(E, turn_off, noargs); action(E, turn_on, noargs)} :- domain(light, E).
+is_state(L, "on") :- domain(light, L), was_state(L, "off"), action(L, turn_on, noargs).
+is_state(L, "off") :- domain(light, L), was_state(L, "on"), action(L, turn_off, noargs).
 % switch
-{action(E, turn_off); action(E, turn_on)} :- domain(switch, E).
-is_state(L, "on") :- domain(switch, L), was_state(L, "off"), action(L, turn_on).
-is_state(L, "off") :- domain(switch, L), was_state(L, "on"), action(L, turn_off).
+{action(E, turn_off, noargs); action(E, turn_on, noargs)} :- domain(switch, E).
+is_state(L, "on") :- domain(switch, L), was_state(L, "off"), action(L, turn_on, noargs).
+is_state(L, "off") :- domain(switch, L), was_state(L, "on"), action(L, turn_off, noargs).
 % input_boolean
-{action(E, turn_off); action(E, turn_on)} :- domain(input_boolean, E).
-is_state(L, "on") :- domain(input_boolean, L), was_state(L, "off"), action(L, turn_on).
-is_state(L, "off") :- domain(input_boolean, L), was_state(L, "on"), action(L, turn_off).
+{action(E, turn_off, noargs); action(E, turn_on)} :- domain(input_boolean, E).
+is_state(L, "on") :- domain(input_boolean, L), was_state(L, "off"), action(L, turn_on, noargs).
+is_state(L, "off") :- domain(input_boolean, L), was_state(L, "on"), action(L, turn_off, noargs).
 % button
-{action(E, press)} :- domain(button, E).
-is_state(L, 0) :- domain(button, E), was_state(E, _), action(L, press).
+{action(E, press, noargs)} :- domain(button, E).
+is_state(L, 0) :- domain(button, E), was_state(E, _), action(L, press, noargs).
 % input_button
-{action(E, press)} :- domain(input_button, E).
-is_state(L, 0) :- domain(input_button, E), was_state(E, _), action(L, press).
-
+{action(E, press, noargs)} :- domain(input_button, E).
+is_state(L, 0) :- domain(input_button, E), was_state(E, _), action(L, press, noargs).
+% select - base facts: select_option/2
+{action(E, select_option, args(option(O)))} :- domain(select, E), select_option(E, O).
+is_state(E, O) :- domain(select, E), was_state(E, _), action(E, select_option, args(O)).
+% input_select - base facts: select_option/2
+{action(E, select_option, args(option(O)))} :- domain(input_select, E), select_option(E, O).
+is_state(E, O) :- domain(input_select, E), was_state(E, _), action(E, select_option, args(option(O))).
 
 % domains (not yet) implemented:
 % automation
@@ -48,7 +54,6 @@ is_state(L, 0) :- domain(input_button, E), was_state(E, _), action(L, press).
 % group
 % input_datetime
 % input_number
-% input_select
 % input_text
 % lock
 % media_player
@@ -59,8 +64,6 @@ is_state(L, 0) :- domain(input_button, E), was_state(E, _), action(L, press).
 % remote
 % scene
 % script
-% select
-% sensor
 % stt
 % text
 % timer
@@ -73,4 +76,4 @@ is_state(L, 0) :- domain(input_button, E), was_state(E, _), action(L, press).
 % Facts:
 % domain(domain, entity). -- entity domains
 % was_state(entity, state). -- The current state (is_state is the goal state)
-% last_changed(entity, -10th-seconds)
+% last_changed(entity, seconds)
