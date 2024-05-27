@@ -20,26 +20,26 @@ call_service(D, Act, E, Args) :- action(E, Act, Args), domain(D, E).
 % person
 :- action(E, _, _), domain(person, E).
 % light
-{action(E, turn_off, noargs); action(E, turn_on, noargs)} :- domain(light, E).
-is_state(L, "on") :- domain(light, L), was_state(L, "off"), action(L, turn_on, noargs).
-is_state(L, "off") :- domain(light, L), was_state(L, "on"), action(L, turn_off, noargs).
+{action(E, turn_off, args()); action(E, turn_on, args())} :- domain(light, E).
+is_state(L, "on") :- domain(light, L), was_state(L, "off"), action(L, turn_on, _).
+is_state(L, "off") :- domain(light, L), was_state(L, "on"), action(L, turn_off, _).
 % switch
-{action(E, turn_off, noargs); action(E, turn_on, noargs)} :- domain(switch, E).
-is_state(L, "on") :- domain(switch, L), was_state(L, "off"), action(L, turn_on, noargs).
-is_state(L, "off") :- domain(switch, L), was_state(L, "on"), action(L, turn_off, noargs).
+{action(E, turn_off, args()); action(E, turn_on, args())} :- domain(switch, E).
+is_state(L, "on") :- domain(switch, L), was_state(L, "off"), action(L, turn_on, _).
+is_state(L, "off") :- domain(switch, L), was_state(L, "on"), action(L, turn_off, _).
 % input_boolean
-{action(E, turn_off, noargs); action(E, turn_on)} :- domain(input_boolean, E).
-is_state(L, "on") :- domain(input_boolean, L), was_state(L, "off"), action(L, turn_on, noargs).
-is_state(L, "off") :- domain(input_boolean, L), was_state(L, "on"), action(L, turn_off, noargs).
+{action(E, turn_off, args()); action(E, turn_on)} :- domain(input_boolean, E).
+is_state(L, "on") :- domain(input_boolean, L), was_state(L, "off"), action(L, turn_on, _).
+is_state(L, "off") :- domain(input_boolean, L), was_state(L, "on"), action(L, turn_off, _).
 % button
-{action(E, press, noargs)} :- domain(button, E).
-is_state(L, 0) :- domain(button, E), was_state(E, _), action(L, press, noargs).
+{action(E, press, args())} :- domain(button, E).
+is_state(L, 0) :- domain(button, E), was_state(E, _), action(L, press, _).
 % input_button
-{action(E, press, noargs)} :- domain(input_button, E).
-is_state(L, 0) :- domain(input_button, E), was_state(E, _), action(L, press, noargs).
+{action(E, press, args())} :- domain(input_button, E).
+is_state(L, 0) :- domain(input_button, E), was_state(E, _), action(L, press, _).
 % select - base facts: select_option/2
 {action(E, select_option, args(option(O)))} :- domain(select, E), select_option(E, O).
-is_state(E, O) :- domain(select, E), was_state(E, _), action(E, select_option, args(O)).
+is_state(E, O) :- domain(select, E), was_state(E, _), action(E, select_option, args(option(O))).
 % input_select - base facts: select_option/2
 {action(E, select_option, args(option(O)))} :- domain(input_select, E), select_option(E, O).
 is_state(E, O) :- domain(input_select, E), was_state(E, _), action(E, select_option, args(option(O))).
