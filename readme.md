@@ -40,6 +40,7 @@ Currently supported domains:
 * zone
 * button/input_button
 * select/input_select
+* person
 
 #### Notes
 

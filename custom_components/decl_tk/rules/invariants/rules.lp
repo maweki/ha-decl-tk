@@ -17,6 +17,8 @@ call_service(D, Act, E, Args) :- action(E, Act, Args), domain(D, E).
 :- action(E, _, _), domain(zone, E).
 % sun
 :- action(E, _, _), domain(sun, E).
+% person
+:- action(E, _, _), domain(person, E).
 % light
 {action(E, turn_off, noargs); action(E, turn_on, noargs)} :- domain(light, E).
 is_state(L, "on") :- domain(light, L), was_state(L, "off"), action(L, turn_on, noargs).
@@ -59,7 +61,6 @@ is_state(E, O) :- domain(input_select, E), was_state(E, _), action(E, select_opt
 % media_player
 % number
 % openhasp
-% person
 % proximity
 % remote
 % scene
