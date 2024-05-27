@@ -175,10 +175,11 @@ def decode_args(args):
   return { arg.name : get_val_from_symbol(arg.arguments[0]) for arg in args.arguments}
 
 def format_return_value(v):
-  try:
-    return str(coerce_return_value(v))
-  except:
-    return quote(v)
+  coerced = str(coerce_return_value(v))
+  if coerced.isnumeric():
+    return coerced
+  else:
+    return quote(coerced)
 
 def quote(v):
   return "\"" + str(v).replace("\"", "\\\"") + "\""
