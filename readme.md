@@ -8,13 +8,13 @@ Copy the integration directory into your `custom_components` directory. After in
 
 ## Features/Tools
 
-### Invariant Maintenance through Answer Set Programming
+### Integrity Maintenance through Answer Set Programming
 
-A home usually has some invariants, some conditions that should be true, no matter what. Once such a condition is no longer true, the smart home should try to make it true again, returning to a valid state. Event-Condition-Action rules are not very "smart" for this use case, as we need to know which Events may affect the condition and once we are in an invalid state, which actions need to be taken, in order to return to a valid state.
+A home usually has some integrity constraints, some conditions that should be true, no matter what. Once such a condition is no longer true, the smart home should try to make it true again, returning to a valid state. Event-Condition-Action rules are not very "smart" for this use case, as we need to know *which events* may affect the condition and once we are in an invalid state, *which actions* need to be taken, in order to return to a valid state.
 
 #### How it works
 
-The Python expression is parsed, transformed according to some rules, and then evaluated against Home Assistant's current state. Each invariant will add a sensor, tracking the value of said invariant. Each invariant will also add a switch that allows us to disable enforcement/maintenance of said invariant. If enforcement is enabled and the sensor shows the invariant in need of maintaining, the transformed Python expression is converted to goal clauses of a logic program, specifically an Answer Set Program. Facts for the states and domains for the used entities are added to the program, as are some general rules about how entity states change depending on called services. We feed the Answer Set Program into [clingo](https://potassco.org/clingo/) and get possible services to call in order to achieve the desired goal of restoring the invariant. We optimize for affecting the switches/lights/devices/etc. that have least recently been changed and try to leave the recently changed ones alone. For the best answer set, we call all deduced services and expect the invariant to be restored.
+You give the ingerity maintenance module a Python expression using the `states`/`is_state`/`has_state` functions as you're used to in your templates. The Python expression is parsed, transformed according to some rules, and then evaluated against Home Assistant's current state. Each invariant will add a sensor, tracking the value of said invariant. Each invariant will also add a switch that allows us to disable enforcement/maintenance of said invariant. If enforcement is enabled and the sensor shows the invariant in need of maintaining, the transformed Python expression is converted to goal clauses of a logic program, specifically an Answer Set Program. Facts for the states and domains for the used entities are added to the program, as are some general rules about how entity states change depending on called services. We feed the Answer Set Program into [clingo](https://potassco.org/clingo/) and get possible services to call in order to achieve the desired goal of restoring the invariant. We optimize for affecting the switches/lights/devices/etc. that have least recently been changed and try to leave the recently changed ones alone. For the best answer set, we call all deduced services and expect the invariant to be restored.
 
 #### Usage
 
@@ -36,8 +36,8 @@ Currently supported domains:
 * sensor/binary_sensor
 * light (only on/off)
 * switch/input_boolean
-* sun
-* zone
+* sun/weather
+* zone/device_tracker
 * button/input_button
 * select/input_select
 * person
@@ -51,7 +51,7 @@ Entities with a timestamp as state (e.g. buttons) do not really make sense in te
 Additional rules can be added into `*.lp` files in the `rules/invariants/` subdirectory. Predefined predicates are:
 
 * `is_state` / `was_state` for goal state and current state
-* `action`, `domain`
+* `action`, `domain`, `call_service`
 
 As only the states for the entities actually used are fed into the solver, entity names may not be generated dynamically.
 
@@ -73,9 +73,11 @@ Multiple invariants should, if possible, use disjoint sets of devices that recei
 
 This is not yet implemented.
 
-## Research
+## Scope & Research
 
 There are currently academic papers in the works describing possible approaches for (constraint) logic programming within the home automation domain. This repository is a "playground" to allow us to evaluate approaches within a real home automation setting. I am happy to participate in any research in that direction.
+
+Though I have an academic background and the ideas are very much shaped by my research, this is not just a proof of concept. I plan to use and maintain this extension and hope other people find the declerative semantics useful. Declarative descriptions should be much clearer and much easier to reason about than the alternative.
 
 ## Contributing
 
