@@ -1,7 +1,7 @@
 {
   "domain": "decl_tk",
   "name": "Declarative Toolkit",
-  "after_dependencies": [],
+  "after_dependencies": ["sensor", "binary_sensor", "switch", "input_boolean", "input_button", "button", "person", "zone", "sun", "light"],
   "codeowners": [],
   "version": "0.1.1",
   "documentation": "https://github.com/maweki/ha-decl-tk",
