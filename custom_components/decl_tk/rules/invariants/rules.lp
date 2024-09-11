@@ -37,10 +37,10 @@ is_state(L, "on") :- domain(input_boolean, L), was_state(L, "off"), action(L, tu
 is_state(L, "off") :- domain(input_boolean, L), was_state(L, "on"), action(L, turn_off, _).
 % button
 {action(E, press, args())} :- domain(button, E).
-is_state(L, 0) :- domain(button, E), was_state(E, _), action(L, press, _).
+is_state(E, 0) :- domain(button, E), was_state(E, _), action(E, press, _).
 % input_button
 {action(E, press, args())} :- domain(input_button, E).
-is_state(L, 0) :- domain(input_button, E), was_state(E, _), action(L, press, _).
+is_state(E, 0) :- domain(input_button, E), was_state(E, _), action(E, press, _).
 % select - base facts: select_option/2
 {action(E, select_option, args(option(O)))} :- domain(select, E), select_option(E, O).
 is_state(E, O) :- domain(select, E), was_state(E, _), action(E, select_option, args(option(O))).
