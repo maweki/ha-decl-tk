@@ -134,6 +134,9 @@ class InvariantSwitch(SwitchEntity, RestoreEntity):
               if entity.domain in ('select', 'input_select'):
                 for option in entity.attributes['options']:
                   state_facts.append('select_option(' + quote(e) + ', '+ quote(option) +').')
+              if entity.domain in ('number', 'input_number'):
+                state_facts.append('set_value(' + quote(e) + ', min, ' + format_return_value(entity.attributes['min']) +').')
+                state_facts.append('set_value(' + quote(e) + ', max, ' + format_return_value(entity.attributes['max']) +').')
 
             ctl = clingo.Control()
             ctl.configuration.solve.models = 0

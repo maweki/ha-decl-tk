@@ -47,6 +47,13 @@ is_state(E, O) :- domain(select, E), was_state(E, _), action(E, select_option, a
 % input_select - base facts: select_option/2
 {action(E, select_option, args(option(O)))} :- domain(input_select, E), select_option(E, O).
 is_state(E, O) :- domain(input_select, E), was_state(E, _), action(E, select_option, args(option(O))).
+% input_number - base facts: set_value/3
+{action(E, set_value, args(value(Min..Max)))} :- domain(input_number, E), set_value(E, max, Max), set_value(E, min, Min).
+is_state(E, V) :- domain(input_number, E), was_state(E, _), action(E, set_value, args(value(V))).
+% number - base facts: set_value/3
+{action(E, set_value, args(value(Min..Max)))} :- domain(input_number, E), set_value(E, max, Max), set_value(E, min, Min).
+is_state(E, V) :- domain(input_number, E), was_state(E, _), action(E, set_value, args(value(V))).
+
 
 % domains (not yet) implemented:
 % automation
@@ -58,11 +65,9 @@ is_state(E, O) :- domain(input_select, E), was_state(E, _), action(E, select_opt
 % fan
 % group
 % input_datetime
-% input_number
 % input_text
 % lock
 % media_player
-% number
 % openhasp
 % proximity
 % remote
