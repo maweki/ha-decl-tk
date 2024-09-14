@@ -1,9 +1,13 @@
 -has_value(E) :- is_state(E, "unknown").
 -has_value(E) :- is_state(E, "unavailable").
 has_value(E) :- is_state(E, S), S != "unknown", S != "unavailable".
+-had_value(E) :- was_state(E, "unknown").
+-had_value(E) :- was_state(E, "unavailable").
+had_value(E) :- was_state(E, S), S != "unknown", S != "unavailable".
 :- is_state(E, S), was_state(E, S), action(E, _, _).
 :- action(E, A1, _), action(E, A2, _), A1!=A2.
 :- action(E, Ac, A1), action(E, Ac, A2), A1!=A2.
+:- action(E, _), not had_value(E).
 is_state(E, S) :- not action(E, _, _), was_state(E, S).
 call_service(D, Act, E, Args) :- action(E, Act, Args), domain(D, E).
 #maximize { C@1 : action(E, _, _), last_changed(E,C) }.
