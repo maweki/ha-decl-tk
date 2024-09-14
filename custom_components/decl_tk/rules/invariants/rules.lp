@@ -25,16 +25,16 @@ call_service(D, Act, E, Args) :- action(E, Act, Args), domain(D, E).
 :- action(E, _, _), domain(device_tracker, E).
 % light
 {action(E, turn_off, args()); action(E, turn_on, args())} :- domain(light, E).
-is_state(L, "on") :- domain(light, L), was_state(L, "off"), action(L, turn_on, _).
-is_state(L, "off") :- domain(light, L), was_state(L, "on"), action(L, turn_off, _).
+is_state(L, "on") :- domain(light, L), was_state(L, _), action(L, turn_on, _).
+is_state(L, "off") :- domain(light, L), was_state(L, _), action(L, turn_off, _).
 % switch
 {action(E, turn_off, args()); action(E, turn_on, args())} :- domain(switch, E).
-is_state(L, "on") :- domain(switch, L), was_state(L, "off"), action(L, turn_on, _).
-is_state(L, "off") :- domain(switch, L), was_state(L, "on"), action(L, turn_off, _).
+is_state(L, "on") :- domain(switch, L), was_state(L, _), action(L, turn_on, _).
+is_state(L, "off") :- domain(switch, L), was_state(L, _), action(L, turn_off, _).
 % input_boolean
 {action(E, turn_off, args()); action(E, turn_on)} :- domain(input_boolean, E).
-is_state(L, "on") :- domain(input_boolean, L), was_state(L, "off"), action(L, turn_on, _).
-is_state(L, "off") :- domain(input_boolean, L), was_state(L, "on"), action(L, turn_off, _).
+is_state(L, "on") :- domain(input_boolean, L), was_state(L, _), action(L, turn_on, _).
+is_state(L, "off") :- domain(input_boolean, L), was_state(L, _), action(L, turn_off, _).
 % button
 {action(E, press, args())} :- domain(button, E).
 is_state(E, 0) :- domain(button, E), was_state(E, _), action(E, press, _).
